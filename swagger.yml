@@ -1,0 +1,405 @@
+openapi: 3.0.0
+info:
+  title: Chat Message API
+  version: 1.0.0
+  description: API для работы с чатом, сообщениями, группами, пользователями и медиафайлами.
+
+servers:
+  - url: http://localhost:3000/api
+
+components:
+  schemas:
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        is_deleted:
+          type: boolean
+        is_group:
+          type: boolean
+      required:
+        - id
+        - is_deleted
+        - is_group
+
+    MessageType:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+      required:
+        - id
+        - name
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+      required:
+        - id
+
+    GroupMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        joined_datetime:
+          type: string
+          format: date-time
+        user_id:
+          type: integer
+        is_deleted:
+          type: boolean
+        left_datetime:
+          type: string
+          format: date-time
+        group_id:
+          type: integer
+      required:
+        - id
+        - user_id
+        - group_id
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        create_date:
+          type: string
+          format: date
+        update_date:
+          type: string
+          format: date
+        send_user_id:
+          type: integer
+        is_deleted:
+          type: boolean
+        conversation_id:
+          type: integer
+        type_id:
+          type: integer
+      required:
+        - id
+        - send_user_id
+        - conversation_id
+        - type_id
+
+    Reaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        message_id:
+          type: integer
+        emoji:
+          type: string
+      required:
+        - id
+        - message_id
+        - emoji
+
+    MediaFile:
+      type: object
+      properties:
+        id:
+          type: integer
+        file_type:
+          type: string
+        file_url:
+          type: string
+        message_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - file_type
+        - file_url
+        - message_id
+
+paths:
+  /conversations:
+    get:
+      summary: Получить список всех разговоров
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Conversation'
+    post:
+      summary: Создать новый разговор
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Conversation'
+      responses:
+        '201':
+          description: Разговор успешно создан
+  /conversations/{id}:
+    get:
+      summary: Получить разговор по ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID разговора
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+        '404':
+          description: Разговор не найден
+    put:
+      summary: Обновить разговор
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID разговора
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Conversation'
+      responses:
+        '200':
+          description: Разговор успешно обновлен
+        '404':
+          description: Разговор не найден
+    delete:
+      summary: Удалить разговор
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID разговора
+      responses:
+        '204':
+          description: Разговор успешно удален
+        '404':
+          description: Разговор не найден
+
+  /messages:
+    get:
+      summary: Получить список всех сообщений
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+    post:
+      summary: Создать новое сообщение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+      responses:
+        '201':
+          description: Сообщение успешно создано
+  /messages/{id}:
+    get:
+      summary: Получить сообщение по ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID сообщения
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          description: Сообщение не найдено
+    put:
+      summary: Обновить сообщение
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID сообщения
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+      responses:
+        '200':
+          description: Сообщение успешно обновлено
+        '404':
+          description: Сообщение не найдено
+    delete:
+      summary: Удалить сообщение
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID сообщения
+      responses:
+        '204':
+          description: Сообщение успешно удалено
+        '404':
+          description: Сообщение не найдено
+
+  /group-members:
+    get:
+      summary: Получить список всех участников групп
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GroupMember'
+    post:
+      summary: Добавить нового участника группы
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMember'
+      responses:
+        '201':
+          description: Участник группы успешно добавлен
+
+  /group-members/{id}:
+    get:
+      summary: Получить участника группы по ID
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID участника группы
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMember'
+        '404':
+          description: Участник группы не найден
+    put:
+      summary: Обновить участника группы
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID участника группы
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMember'
+      responses:
+        '200':
+          description: Участник группы успешно обновлен
+        '404':
+          description: Участник группы не найден
+    delete:
+      summary: Удалить участника группы
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID участника группы
+      responses:
+        '204':
+          description: Участник группы успешно удален
+        '404':
+          description: Участник группы не найден
+
+  /media-files:
+    get:
+      summary: Получить список всех медиафайлов
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MediaFile'
+    post:
+      summary: Загрузить новый медиафайл
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaFile'
+      responses:
+        '201':
+          description: Медиафайл успешно загружен
+
+  /reactions:
+    get:
+      summary: Получить список всех реакций
+      responses:
+        '200':
+          description: Успешный запрос
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reaction'
+    post:
+      summary: Создать новую реакцию
+      requestBody:
+        required: true
+        content:
+          application/json:
+           
